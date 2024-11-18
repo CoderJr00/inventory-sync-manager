@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Necesitarás configurar prisma o tu ORM preferido
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
