@@ -1,5 +1,4 @@
 {
-  "homepage": "https://tu-nombre-de-usuario-de-github.github.io/nombre-del-repositorio/",
   "name": "next-excel",
   "version": "0.1.0",
   "private": true,
@@ -9,9 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:reset": "npx prisma db reset",
-    "postinstall": "prisma generate",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
