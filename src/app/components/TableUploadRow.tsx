@@ -45,15 +45,20 @@ export default function TableUploadRow() {
     const [editingReserve, setEditingReserve] = useState<string | null>(null);
     const [tempReserveValue, setTempReserveValue] = useState<string>('');
     const [showHelp, setShowHelp] = useState(false);
+    const [globalExtra, setGlobalExtra] = useState(10);
+    const [isLoadingTemplate, setIsLoadingTemplate] = useState(true);
 
     useEffect(() => {
         // Cargar la plantilla desde la base de datos al iniciar
         const loadTemplate = async () => {
+            setIsLoadingTemplate(true);
             try {
                 const template = await fetchTemplate();
                 setActiveTemplate(template);
             } catch (error) {
                 console.error('Error al cargar la plantilla:', error);
+            } finally {
+                setIsLoadingTemplate(false);
             }
         };
 
@@ -111,34 +116,34 @@ export default function TableUploadRow() {
         const totalStock = data.odooStock;
         const tuambiaReserve = Math.floor(totalStock * (product.reservePercentage / 100));
         const othersReserve = Math.floor(totalStock - tuambiaReserve);
-        const globalExtra = 10;
-        
+
         const realTambiaSold = data.tambiaSold;
         const tambiaTotal = data.tambiaAvailable + realTambiaSold;
 
-        if (tambiaTotal <= tuambiaReserve) {
+        if (tambiaTotal <= tuambiaReserve) { // Si el stock total en TuAmbia es menor o igual a la reserva de TuAmbia, se resta el stock total
             return {
-                value: Math.floor(Math.abs(tuambiaReserve - tambiaTotal)),
+                value: Math.floor(Math.abs(tuambiaReserve - (data.tambiaAvailable + (realTambiaSold + realTambiaSold * (globalExtra / 100))))),
                 type: tuambiaReserve > tambiaTotal ? 'increase' : 'decrease'
             };
         } else {
             const excess = Math.floor(tambiaTotal - tuambiaReserve);
-            
-            if (data.tambiaAvailable >= excess) {
+
+            if (data.tambiaAvailable >= excess) { // Si el stock disponible en TuAmbia es mayor o igual al exceso, se resta el exceso
                 return {
                     value: Math.floor(excess),
                     type: 'decrease'
                 };
-            } else {
+            } else { // Si el stock disponible en TuAmbia es menor al exceso, se resta el stock disponible
                 const canReduceFromAvailable = Math.floor(data.tambiaAvailable);
                 const remainingExcess = Math.floor(excess - canReduceFromAvailable);
 
-                if (remainingExcess <= othersReserve) {
+                if (remainingExcess <= othersReserve) { // Si el resto del exceso es menor o igual a la reserva de otros, se resta el stock disponible
                     return {
                         value: Math.floor(canReduceFromAvailable),
                         type: 'decrease'
                     };
                 } else {
+                    console.log('oversell ' + product.tambiaName + ' ' + remainingExcess + ' - ' + othersReserve + ' = ' + (remainingExcess - othersReserve));
                     return {
                         value: Math.floor(canReduceFromAvailable),
                         type: 'decrease',
@@ -698,6 +703,11 @@ export default function TableUploadRow() {
         }
     };
 
+    const handleGlobalExtraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value) || 0;
+        setGlobalExtra(Math.max(0, Math.min(100, value))); // Limitar entre 0 y 100
+    };
+
     return (
         <div className="min-h-screen bg-gray-900">
             <Navbar
@@ -711,6 +721,17 @@ export default function TableUploadRow() {
                         onTemplateLoad={handleTemplateLoad}
                         inventoryData={inventoryData}
                     />
+                ) : isLoadingTemplate ? (
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                        <div className="text-center space-y-4">
+                            <div className="relative flex justify-center">
+                                <div className="w-16 h-16 border-t-4 border-b-4 border-blue-500 rounded-full animate-spin"></div>
+                                <div className="w-16 h-16 border-t-4 border-b-4 border-blue-300 rounded-full animate-spin absolute top-0" style={{ animationDirection: 'reverse', opacity: 0.7 }}></div>
+                            </div>
+                            <div className="text-xl font-semibold text-blue-500">Cargando plantilla...</div>
+                            <div className="text-sm text-slate-400">Por favor espere mientras se cargan los datos</div>
+                        </div>
+                    </div>
                 ) : !activeTemplate ? (
                     <div className="text-center py-12">
                         <div className="inline-block p-6 bg-gray-800 rounded-lg shadow-lg">
@@ -997,89 +1018,116 @@ export default function TableUploadRow() {
                                     </Dialog>
                                 </Transition>
                             </div>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="globalExtra" className="text-sm text-slate-300">
+                                    Porcentaje de Productos Vendidos Extras (En el Carrito) (%):
+                                </label>
+                                <input
+                                    id="globalExtra"
+                                    type="number"
+                                    className="w-20 px-2 py-1 text-white rounded bg-slate-700 border-slate-500"
+                                    value={globalExtra}
+                                    onChange={handleGlobalExtraChange}
+                                    onBlur={handleGlobalExtraChange}
+                                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                        if (e.key === 'Enter') {
+                                            handleGlobalExtraChange({ target: e.target } as React.ChangeEvent<HTMLInputElement>);
+                                        }
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    autoFocus
+                                    min="0"
+                                    max="100"
+                                />
+                            </div>
                         </div>
 
                         {/* Tabla de Resultados */}
-                        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                            <table className="w-full text-sm text-left">
-                                <thead className="text-xs text-blue-800 border-b border-slate-600 uppercase bg-gray-800">
-                                    <tr>
-                                        <th className="px-6 py-3">
-                                            <input
-                                                type="checkbox"
-                                                onChange={(e) => handleSelectAll(e.target.checked)}
-                                                checked={selectedRows.size > 0 && selectedRows.size === activeTemplate.products.filter(p => p.visible).length}
-                                            />
-                                        </th>
-                                        <th className="px-6 py-3">Nombre TuAmbia</th>
-                                        <th className="px-6 py-3">Disponibilidad Odoo</th>
-                                        <th className="px-6 py-3">Disponibilidad TuAmbia</th>
-                                        <th className="px-6 py-3">Vendidos TuAmbia</th>
-                                        <th className="px-6 py-3">Ajuste Necesario</th>
-                                        <th className="px-6 py-3">Reserva PDV/KO</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {activeTemplate?.products
-                                        ?.filter(product => product.visible)
-                                        .map(product => {
-                                            const data = inventoryData.get(product.odooCode);
-                                            const stockDiff = calculateStockDifference(product.odooCode);
-                                            const othersReserved = calculateOthersReserved(product.odooCode);
-                                            return (
-                                                <tr key={product.odooCode} className="bg-slate-800 text-slate-300 border-b border-slate-500 hover:bg-slate-700">
-                                                    <td className="px-6 py-4">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedRows.has(product.odooCode)}
-                                                            onChange={(e) => {
-                                                                const newSelected = new Set(selectedRows);
-                                                                if (e.target.checked) {
-                                                                    newSelected.add(product.odooCode);
-                                                                } else {
-                                                                    newSelected.delete(product.odooCode);
-                                                                }
-                                                                setSelectedRows(newSelected);
-                                                            }}
-                                                        />
-                                                    </td>
-                                                    <td className="px-6 py-4">{product.tambiaName}</td>
-                                                    <td className="px-6 py-4">{data?.odooStock || 0}</td>
-                                                    <td className="px-6 py-4">{data?.tambiaAvailable || 0}</td>
-                                                    <td className="px-6 py-4">{data?.tambiaSold || 0}</td>
-                                                    <td className="px-6 py-4">
-                                                        {stockDiff.value !== 0 && (
-                                                            <div className="space-y-1">
-                                                                <span className={`font-bold ${stockDiff.type === 'increase'
-                                                                    ? 'text-green-600'
-                                                                    : 'text-red-600'
-                                                                    }`}>
-                                                                    {stockDiff.type === 'increase' ? '+' : '-'}
-                                                                    {stockDiff.value}
-                                                                </span>
+                        {activeTemplate && tambiaAvailableFile && tambiaSoldFile && odooFile && (
+                            <>
+                                <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="text-xs text-blue-800 border-b border-slate-600 uppercase bg-gray-800">
+                                            <tr>
+                                                <th className="px-6 py-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        onChange={(e) => handleSelectAll(e.target.checked)}
+                                                        checked={selectedRows.size > 0 && selectedRows.size === activeTemplate.products.filter(p => p.visible).length}
+                                                    />
+                                                </th>
+                                                <th className="px-6 py-3">Nombre TuAmbia</th>
+                                                <th className="px-6 py-3">Disponibilidad Odoo</th>
+                                                <th className="px-6 py-3">Disponibilidad TuAmbia</th>
+                                                <th className="px-6 py-3">Vendidos TuAmbia</th>
+                                                <th className="px-6 py-3">Ajuste Necesario</th>
+                                                <th className="px-6 py-3">Reserva PDV/KO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {activeTemplate?.products
+                                                ?.filter(product => product.visible)
+                                                .map(product => {
+                                                    const data = inventoryData.get(product.odooCode);
+                                                    const stockDiff = calculateStockDifference(product.odooCode);
+                                                    console.log(stockDiff.oversell);
+                                                    const othersReserved = calculateOthersReserved(product.odooCode);
+                                                    return (
+                                                        <tr key={product.odooCode} className="bg-slate-800 text-slate-300 border-b border-slate-500 hover:bg-slate-700">
+                                                            <td className="px-6 py-4">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedRows.has(product.odooCode)}
+                                                                    onChange={(e) => {
+                                                                        const newSelected = new Set(selectedRows);
+                                                                        if (e.target.checked) {
+                                                                            newSelected.add(product.odooCode);
+                                                                        } else {
+                                                                            newSelected.delete(product.odooCode);
+                                                                        }
+                                                                        setSelectedRows(newSelected);
+                                                                    }}
+                                                                />
+                                                            </td>
+                                                            <td className="px-6 py-4">{product.tambiaName}</td>
+                                                            <td className="px-6 py-4">{data?.odooStock || 0}</td>
+                                                            <td className="px-6 py-4">{data?.tambiaAvailable || 0}</td>
+                                                            <td className="px-6 py-4">{data?.tambiaSold || 0}</td>
+                                                            <td className="px-6 py-4">
+                                                                {stockDiff.value !== 0 && (
+                                                                    <div className="space-y-1">
+                                                                        <span className={`font-bold ${stockDiff.type === 'increase'
+                                                                            ? 'text-green-600'
+                                                                            : 'text-red-600'
+                                                                            }`}>
+                                                                            {stockDiff.type === 'increase' ? '+' : '-'}
+                                                                            {stockDiff.value}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
                                                                 {stockDiff.oversell && (
-                                                                    <div className="text-xs font-medium text-red-500 bg-red-100 px-2 py-1 rounded">
+                                                                    <div className="text-xs font-bold text-white bg-red-500 px-2 py-1 rounded">
                                                                         Sobreventa: {stockDiff.oversell}
                                                                     </div>
                                                                 )}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4">{othersReserved}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                </tbody>
-                            </table>
-                        </div>
+                                                            </td>
+                                                            <td className="px-6 py-4">{othersReserved}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                        {/* Agregar botón para copiar */}
-                        <button
-                            onClick={copyToClipboard}
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Copiar Lista de Ajustes
-                        </button>
+                                {/* Agregar botón para copiar */}
+                                <button
+                                    onClick={copyToClipboard}
+                                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                    Copiar Lista de Ajustes
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
             </main>

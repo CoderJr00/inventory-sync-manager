@@ -46,29 +46,25 @@ export default function TemplateUpload({ onTemplateLoad, inventoryData = new Map
     const [editingReserve, setEditingReserve] = useState<string | null>(null);
     const [tempReserveValue, setTempReserveValue] = useState<string>('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isLoadingTemplate, setIsLoadingTemplate] = useState(true);
+    const [isUpdatingReserve, setIsUpdatingReserve] = useState<string | null>(null);
 
     useEffect(() => {
-        loadGeneralTemplate();
-    }, []);
-
-    const loadGeneralTemplate = async () => {
-        try {
-            setIsLoading(true);
-            const loadedTemplate = await fetchTemplate();
-            if (loadedTemplate) {
-                const templateWithDate = {
-                    ...loadedTemplate,
-                };
-                setTemplate(templateWithDate);
-                onTemplateLoad(templateWithDate);
+        const loadTemplate = async () => {
+            setIsLoadingTemplate(true);
+            try {
+                const template = await fetchTemplate();
+                setTemplate(template);
+                onTemplateLoad(template);
+            } catch (error) {
+                console.error('Error al cargar la plantilla:', error);
+            } finally {
+                setIsLoadingTemplate(false);
             }
-        } catch (error) {
-            setError('Error al cargar la plantilla');
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
+
+        loadTemplate();
+    }, []);
 
     const processTemplateFile = async (file: File) => {
         const reader = new FileReader();
@@ -197,18 +193,52 @@ export default function TemplateUpload({ onTemplateLoad, inventoryData = new Map
         setTempReserveValue(value);
     };
 
-    const handleReserveUpdate = (odooCode: string) => {
-        const newValue = Number(tempReserveValue);
-        if (!isNaN(newValue) && newValue >= 0 && newValue <= 100) {
-            const index = template?.products.findIndex(p => p.odooCode === odooCode) ?? -1;
-            if (index !== -1 && template) {
-                updateProductPercentage(index, newValue);
-            }
+    const handleReserveUpdate = async (odooCode: string) => {
+        const numValue = parseInt(tempReserveValue);
+        if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+            setEditingReserve(null);
+            return;
         }
-        setEditingReserve(null);
+
+        setIsUpdatingReserve(odooCode);
+        
+        try {
+            if (template) {
+                const newTemplate = {
+                    ...template,
+                    products: template.products.map(product => {
+                        if (product.odooCode === odooCode) {
+                            return { ...product, reservePercentage: numValue };
+                        }
+                        return product;
+                    })
+                };
+                await updateTemplate(newTemplate);
+                setTemplate(newTemplate);
+                onTemplateLoad(newTemplate);
+            }
+        } catch (error) {
+            console.error('Error al actualizar el porcentaje:', error);
+        } finally {
+            setIsUpdatingReserve(null);
+            setEditingReserve(null);
+        }
     };
 
-    if (isLoading) return <div>Cargando plantilla...</div>;
+    if (isLoadingTemplate) return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center space-y-4">
+                    <div className="relative flex justify-center">
+                        <div className="w-16 h-16 border-t-4 border-b-4 border-blue-500 rounded-full animate-spin"></div>
+                        <div className="w-16 h-16 border-t-4 border-b-4 border-blue-300 rounded-full animate-spin absolute top-0" style={{ animationDirection: 'reverse', opacity: 0.7 }}></div>
+                    </div>
+                    <div className="text-xl font-semibold text-blue-500">Cargando plantilla...</div>
+                    <div className="text-sm text-slate-400">Por favor espere mientras se cargan los datos</div>
+                </div>
+            </div>
+        </div>
+    );
     if (error) return <div>Error: {error}</div>;
 
     console.log('Current template:', template);
@@ -314,20 +344,27 @@ export default function TemplateUpload({ onTemplateLoad, inventoryData = new Map
                                         </td>
                                         <td className="px-6 py-4">
                                             {editingReserve === product.odooCode ? (
-                                                <input
-                                                    type="text"
-                                                    className="w-20 px-2 py-1 text-black rounded"
-                                                    value={tempReserveValue}
-                                                    onChange={(e) => handleReserveChange(e.target.value)}
-                                                    onBlur={() => handleReserveUpdate(product.odooCode)}
-                                                    onKeyPress={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleReserveUpdate(product.odooCode);
-                                                        }
-                                                    }}
-                                                    onFocus={(e) => e.target.select()}
-                                                    autoFocus
-                                                />
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        className="w-20 px-2 py-1 text-black rounded"
+                                                        value={tempReserveValue}
+                                                        onChange={(e) => handleReserveChange(e.target.value)}
+                                                        onBlur={() => handleReserveUpdate(product.odooCode)}
+                                                        onKeyPress={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleReserveUpdate(product.odooCode);
+                                                            }
+                                                        }}
+                                                        onFocus={(e) => e.target.select()}
+                                                        autoFocus
+                                                    />
+                                                    {isUpdatingReserve === product.odooCode && (
+                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                                                            <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <div
                                                     onClick={() => handleStartEditing(product.odooCode, product.reservePercentage)}
