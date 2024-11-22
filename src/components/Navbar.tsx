@@ -43,16 +43,16 @@ export default function Navbar({ showTemplateUpload, onToggleTemplate, hasTempla
                             <span>Ayuda</span>
                         </button>
                     </div>
-                    {(showTemplateUpload || hasTemplate) && (
-                        <div>
+                    <div>
+                        {(showTemplateUpload || hasTemplate) && (
                             <button
                                 onClick={onToggleTemplate}
                                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                             >
                                 {showTemplateUpload ? 'Volver a Inventario' : 'Gestionar Plantilla'}
                             </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 

@@ -357,7 +357,6 @@ export default function TemplateUpload({ onTemplateLoad, inventoryData = new Map
                                                             }
                                                         }}
                                                         onFocus={(e) => e.target.select()}
-                                                        autoFocus
                                                     />
                                                     {isUpdatingReserve === product.odooCode && (
                                                         <div className="absolute inset-y-0 right-0 flex items-center pr-2">
