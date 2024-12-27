@@ -1,32 +1,45 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
-model Template {
-    id                   String    @id
-    name                 String
-    updatedAt            DateTime  @updatedAt
-    globalExtraPercentage Float    @default(10)
-    products            Product[]
+model Product {
+  id                String            @id @default(cuid())
+  tambiaCode        String?
+  odooCode          String
+  tambiaName        String?
+  odooName          String
+  category          String
+  visible           Boolean           @default(true)
+  reservePercentage Float             @default(75)
+  minimum           Float             @default(0)
+  maximum           Float             @default(0)
+  fabricable        Boolean           @default(false)
+  TemplateProduct   TemplateProduct[]
+  unidadMedida      String?
+  cantidadInventario Float?             @default(0)
 }
 
-model Product {
-    id                String    @id @default(cuid())
-    tambiaCode        String?
-    odooCode          String
-    tambiaName        String?
-    odooName          String
-    category          String
-    visible           Boolean   @default(true)
-    reservePercentage Float     @default(75)
-    template          Template  @relation(fields: [templateId], references: [id])
-    templateId        String
-} 
+model Template {
+  id                    String            @id
+  name                  String
+  updatedAt             DateTime          @updatedAt
+  globalExtraPercentage Float             @default(10)
+  products              TemplateProduct[]
+}
+
+model TemplateProduct {
+  id         String @id @default(cuid())
+  templateId String
+  productId  String
+  percentage Float
+
+  template Template @relation(fields: [templateId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+}

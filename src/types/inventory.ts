@@ -1,11 +1,16 @@
 export interface Product {
-  tambiaCode: string;
+  tambiaCode: string | null;
   odooCode: string;
-  tambiaName: string;
+  tambiaName: string | null;
   odooName: string;
+  unidadMedida: string;
   category: string;
   visible: boolean;
+  fabricable: boolean;
   reservePercentage: number;
+  minimum: number;
+  maximum: number;
+  cantidadInventario: number;
 }
 
 export interface InventoryTemplate {
