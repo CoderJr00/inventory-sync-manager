@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx'
 import { showNotification } from '@/components/Notification'
 import { Product } from '@/types/inventory'
 import { createProduct } from '@/utils/productsManager'
+import { LoadingOverlay } from './LoadingOverlay'
 
 interface PlanTrabajoData {
     codigo: string
@@ -32,8 +33,10 @@ export function ProductsView() {
     const [tempAmountValue, setTempAmountValue] = useState<string>('');
     const [isUpdatingAmount, setIsUpdatingAmount] = useState<string | null>(null);
     const [customAmounts, setCustomAmounts] = useState<Record<string, number>>({});
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        setIsLoading(true);
         const fetchProducts = async () => {
             try {
                 const response = await fetch('/api/products');
@@ -47,6 +50,7 @@ export function ProductsView() {
         };
 
         fetchProducts(); // Llamar a la función para obtener productos
+        setIsLoading(false);
     }, []); // El array vacío asegura que se ejecute solo una vez al montar el componente
 
     const validateFileStructure = (jsonData: any[]) => {
@@ -141,8 +145,8 @@ export function ProductsView() {
                             unidadMedida: row['Unidad de medida'],
                             category: row['Categoría interna' || null],
                             // cantidad: Number(row['Cantidad disponible'] || 0),
-                            minimum: Number(row['Producto/ Abasteciendo cant. min.'] || 0),
-                            maximum: Number(row['Producto/ Abasteciendo cant. max.'] || 0),
+                            minimum: Number(row['Abasteciendo cant. min.'] || 0),
+                            maximum: Number(row['Abasteciendo cant. max.'] || 0),
                             fabricable: Boolean(row['Lista de materiales/Activo'] || false),
                             reservePercentage: 75,
                             tambiaCode: null,
@@ -379,15 +383,18 @@ export function ProductsView() {
     };
 
     const handleCreateProduct = async () => {
-        console.log('Intentando crear productos...');
+        setIsLoading(true);
         if (file) {
+            const p: Product[] = [];
             for (const product of previewData) {
-                console.log(product)
                 const res = await createProduct(product);
                 if (res.ok) {
-                    setProducts(prev => [...prev, product]);
+                    p.push(product);
+                    // setProducts(prev => [...prev, product]);
                 }
             }
+            console.log(p);
+            setProducts(p);
             showNotification({
                 type: 'success',
                 title: 'Productos Actualizados',
@@ -402,9 +409,11 @@ export function ProductsView() {
                 duration: 3000
             });
         }
+        setIsLoading(false);
     };
 
     const handleCreateProductFromStock = async () => {
+        setIsLoading(true);
         console.log('Intentando crear productos...');
         if (stockFile) {
             for (const product of previewStockData) {
@@ -428,6 +437,7 @@ export function ProductsView() {
                 duration: 3000
             });
         }
+        setIsLoading(false);
     };
 
     // Modificar la función de filtrado para incluir cantidades personalizadas
@@ -488,12 +498,16 @@ export function ProductsView() {
     };
 
     const handleDeleteAllProducts = async () => {
+        setIsLoading(true);
         try {
             const response = await fetch('/api/products', {
                 method: 'DELETE',
             });
 
-            if (!response.ok) throw new Error('Error deleting products');
+            if (!response.ok) throw new Error('Error deleting products')
+            else {
+                setProducts([]);
+            }
             showNotification({
                 type: 'success',
                 title: 'Productos eliminados',
@@ -509,6 +523,7 @@ export function ProductsView() {
                 duration: 3000,
             });
         }
+        setIsLoading(false);
     };
 
     const handleCopyBuyList = () => {
@@ -575,6 +590,7 @@ export function ProductsView() {
 
     return (
         <div className="flex-1 space-y-4 md:pt-5 md:px-10">
+            {isLoading && <LoadingOverlay />}
             <div className="flex items-center justify-start">
                 <h2 className="text-3xl font-bold tracking-tight text-slate-200 ml-10">
                     Gestión de Productos
@@ -647,29 +663,6 @@ export function ProductsView() {
                                     Generar Plan de Producción
                                 </button>
                             </div>
-                        </div>
-
-                        {/* Feedback del estado de carga */}
-                        <div className="text-sm flex items-center">
-                            {file && (
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            setFile(null);
-                                            setPreviewData([]);
-                                            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                                            if (input) {
-                                                input.value = '';
-                                            }
-                                        }}
-                                        className="p-1 bg-red-500 rounded-full hover:bg-red-600 ml-4"
-                                    >
-                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </>
-                            )}
                         </div>
                     </div>
 
@@ -969,9 +962,9 @@ export function ProductsView() {
                                     <div className="mt-4 flex justify-end gap-2">
                                         <button
                                             onClick={() => {
-                                                setShowUpload(false)
-                                                setFile(null);
                                                 setPreviewData([]);
+                                                setFile(null);
+                                                setShowUpload(false)
                                                 const input = document.querySelector('input[type="file"]') as HTMLInputElement;
                                                 if (input) {
                                                     input.value = '';
@@ -984,8 +977,8 @@ export function ProductsView() {
                                         <button
                                             onClick={() => {
                                                 if (previewData.length > 0) {
-                                                    setShowUpload(false)
                                                     handleCreateProduct();
+                                                    setShowUpload(false)
                                                 }
                                             }}
                                             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -1108,9 +1101,9 @@ export function ProductsView() {
                                         <button
                                             onClick={() => {
                                                 if (previewStockData.length > 0) {
-                                                    setStockUpload(false)
                                                     handleCreateProductFromStock()
                                                 }
+                                                setStockUpload(false)
                                             }}
                                             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                                             disabled={!stockFile}
