@@ -1,6 +1,6 @@
 "use client"
 
-import TableUploadRow from "@/app/components/TableUploadRow"
+// import TableUploadRow from "@/app/components/TableUploadRow"
 
 export function Inventario() {
   return (
@@ -11,7 +11,7 @@ export function Inventario() {
         </h2>
       </div>
       <div className="border border-slate-700 bg-slate-800/50 backdrop-blur-sm shadow-xl rounded-lg">
-        <TableUploadRow />
+        {/* <TableUploadRow /> */}
       </div>
     </div>
   )
