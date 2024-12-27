@@ -58,21 +58,21 @@ export async function POST(request: Request) {
     }
 }
 
-export async function DELETE() {
-    try {
-        // Eliminar primero los productos relacionados
-        await prisma.product.deleteMany({
-            where: { templateId: 'general' }
-        });
+// export async function DELETE() {
+//     try {
+//         // Eliminar primero los productos relacionados
+//         await prisma.product.deleteMany({
+//             where: { templateId: 'general' }
+//         });
 
-        // Luego eliminar la plantilla
-        await prisma.template.delete({
-            where: { id: 'general' }
-        });
+//         // Luego eliminar la plantilla
+//         await prisma.template.delete({
+//             where: { id: 'general' }
+//         });
 
-        return NextResponse.json({ message: 'Template deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting template:', error);
-        return NextResponse.json({ error: 'Error deleting template' }, { status: 500 });
-    }
-}
+//         return NextResponse.json({ message: 'Template deleted successfully' });
+//     } catch (error) {
+//         console.error('Error deleting template:', error);
+//         return NextResponse.json({ error: 'Error deleting template' }, { status: 500 });
+//     }
+// }
