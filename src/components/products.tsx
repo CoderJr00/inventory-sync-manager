@@ -1179,6 +1179,19 @@ export function ProductsView() {
                                                                 <li><code>Categoría interna</code>: Categoría del producto</li>
                                                                 <li><code>Lista de materiales/Activo</code>: Indica si es fabricable (true/false)</li>
                                                             </ul>
+                                                            <h2 className="font-semibold">Indicaciones:</h2>
+                                                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                                                <li><code>Abrir apartado de Productos</code></li>
+                                                                <li><code>Ordenar Productos a modo de lista en el icono en la parte superior derecha, debajo
+                                                                    de la barra de búsqueda, exactamente debajo de la lupa</code></li>
+                                                                <li><code>Cambia cantidad de productos que se muestran en pantalla, dando doble click en el número 80 y cambiándolo
+                                                                    por la cantidad total a su derecha. Ejemplo Antes: 1-80/2340 ... Después 1-2340/2340</code></li>
+                                                                <li><code>Seleccionar en la casilla a la izquierda en la parte superior la casilla para seleccionar todos los productos,
+                                                                    la casilla que esta justo debajo del botón CREAR</code></li>
+                                                                <li><code>Luego, dar en el botón de exportar que se encuentra en la parte superior central</code></li>
+                                                                <li><code>Exportar reporte seleccionando la Plantilla ¨Pedro Sistema Informatico¨</code></li>
+                                                                <li><code>Importar en el Sistema</code></li>
+                                                            </ul>
                                                         </div>
 
                                                         <div>
@@ -1195,12 +1208,24 @@ export function ProductsView() {
                                                                 <li><code>Producto/ Abasteciendo cant. max.</code>: Stock máximo</li>
                                                                 <li><code>Producto/Lista de materiales/Activo</code>: Indica si es fabricable</li>
                                                             </ul>
+                                                            <h2 className="font-semibold">Indicaciones:</h2>
+                                                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                                                <li><code>Abrir apartado de Informes de Inventario en Informes</code></li>
+                                                                <li><code>Agrupar Por Ubicación la disponibilidad de los productos</code></li>
+                                                                <li><code>Desplegar las ubicaciones de Centro de Elaboración y Frank País expandiendo las cantidades a mostrar de productos(Ejemplo Antes: 1-80/2340 ... Después 1-2340/2340)</code></li>
+                                                                <li><code>Seleccionar en la casilla a la izquierda en la parte superior la casilla para seleccionar todos los productos,
+                                                                    la casilla que esta justo debajo del botón CREAR</code></li>
+                                                                <li><code>Luego, dar en el botón de exportar que se encuentra en la parte superior central</code></li>
+                                                                <li><code>Exportar reporte seleccionando la Plantilla ¨Sistema CE-FP</code></li>
+                                                                <li><code>Importar en el Sistema</code></li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </section>
 
                                                 <section>
                                                     <h2 className="text-xl font-bold text-white">🛠️ Funciones de Gestión</h2>
+                                                    <p className="text-sm text-gray-400"><code>NOTA: </code>Ambos se copian automáticamente al portapapeles.</p>
                                                     <div className="space-y-4">
                                                         <div>
                                                             <h3 className="text-lg font-semibold">📝 Generar Pedido de Compra</h3>
