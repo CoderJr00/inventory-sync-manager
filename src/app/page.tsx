@@ -47,7 +47,7 @@ export default function Home() {
       </div> */}
       <main className="flex-1 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
         {selectedOption === 'products-view' && <ProductsView />}
-        {selectedOption === 'inventario-view' && <TableUploadRow />}
+        {/* {selectedOption === 'inventario-view' && <TableUploadRow />} */}
         {/* {selectedOption === 'plan-trabajo-view' && <PlanTrabajo />} */}
       </main>
     </div>
