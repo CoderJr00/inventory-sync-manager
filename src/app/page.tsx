@@ -1,5 +1,5 @@
 "use client"
-import TableUploadRow from './components/TableUploadRow';
+// import TableUploadRow from './components/TableUploadRow';
 import { useState } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 // import { Inventario } from '@/components/inventario'
