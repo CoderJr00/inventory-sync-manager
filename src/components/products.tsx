@@ -183,6 +183,7 @@ export function ProductsView() {
     }
 
     const processStockFile = (file: File) => {
+        setIsLoading(true)
         const reader = new FileReader()
         reader.onload = async (e) => {
             try {
@@ -276,7 +277,7 @@ export function ProductsView() {
                 if (newProducts.length > 0) {
                     setPreviewStockData(newProducts);
                 }
-
+                setIsLoading(false)
                 showNotification({
                     type: 'success',
                     title: 'Archivo procesado',
@@ -402,23 +403,23 @@ export function ProductsView() {
                 });
 
                 if (!response.ok) throw new Error('Error creating products');
-                
+
                 // Esperar la respuesta del servidor
                 const result = await response.json();
-                
+
                 // Solo actualizar el estado local si la creación fue exitosa
                 if (result.count > 0) {
-                // Actualizar el estado local
-                setProducts(prev => [...prev, ...previewData]);
-                setPreviewData([]);
-                setFile(null);
+                    // Actualizar el estado local
+                    setProducts(prev => [...prev, ...previewData]);
+                    setPreviewData([]);
+                    setFile(null);
 
-                showNotification({
-                    type: 'success',
-                    title: 'Productos Creados',
+                    showNotification({
+                        type: 'success',
+                        title: 'Productos Creados',
                         message: `Se han creado ${result.count} productos correctamente.`,
-                    duration: 3000
-                });
+                        duration: 3000
+                    });
                 } else {
                     throw new Error('No se crearon productos');
                 }
@@ -942,7 +943,7 @@ export function ProductsView() {
                                             setStockUpload(false)
                                         }}
                                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                        disabled={!stockFile}
+                                        disabled={!stockFile && !isLoading}
                                     >
                                         Confirmar
                                     </button>
