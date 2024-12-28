@@ -1,5 +1,5 @@
 export interface Product {
-  [x: string]: any;  
+  id?: string;
   tambiaCode: string | null;
   odooCode: string;
   tambiaName: string | null;
