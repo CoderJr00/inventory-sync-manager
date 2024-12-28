@@ -279,7 +279,7 @@ export function ProductsView() {
                 // Crear nuevos productos
                 if (newProducts.length > 0) {
                     setPreviewStockData(newProducts);
-                } else setShowStockPreview(false)
+                } else setStockUpload(false)
                 showNotification({
                     type: 'success',
                     title: 'Archivo procesado',
