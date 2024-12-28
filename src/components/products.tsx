@@ -207,6 +207,8 @@ export function ProductsView() {
                     return
                 }
 
+                handleResetAllStock()
+
                 // Crear un array para productos nuevos y otro para actualizaciones
                 const updatedProducts: Product[] = [];
                 const newProducts: Product[] = [];
