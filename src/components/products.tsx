@@ -858,6 +858,7 @@ export function ProductsView() {
                                                 type="file"
                                                 accept=".xlsx,.xls"
                                                 onChange={(e) => {
+                                                    setIsLoadingStockP(true)
                                                     const file = e.target.files?.[0];
                                                     if (file) {
                                                         processStockFile(file);
