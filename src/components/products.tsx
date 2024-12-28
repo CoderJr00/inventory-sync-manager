@@ -892,7 +892,7 @@ export function ProductsView() {
                                                 onClick={() => setShowStockPreview(!showStockPreview)}
                                                 className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-2"
                                             >
-                                                {showStockPreview ? '▼ Ocultar' : '▶ Mostrar'} productos nuevos
+                                                {showStockPreview ? '▼ Ocultar' : '▶ Mostrar'} productos nuevos encontrados durante la actualización
                                             </button>
                                         )}
 
@@ -929,36 +929,39 @@ export function ProductsView() {
                                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                     </div>
                                 )}
-                                <div className="mt-4 flex justify-end gap-2">
-                                    <button
-                                        onClick={() => {
-                                            setStockUpload(false)
-                                            setStockFile(null);
-                                            setPreviewStockData([]);
-                                            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                                            if (input) {
-                                                input.value = '';
-                                            }
-                                        }}
-                                        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                                        hidden={isLoading}
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (previewStockData.length > 0) {
-                                                handleCreateProductFromStock()
-                                            }
-                                            setStockUpload(false)
-                                        }}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                        disabled={!stockFile && !isLoading}
-                                        hidden={isLoading}
-                                    >
-                                        Crear Productos
-                                    </button>
-                                </div>
+                                {!isLoadingStockP && (
+
+                                    <div className="mt-4 flex justify-end gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setStockUpload(false)
+                                                setStockFile(null);
+                                                setPreviewStockData([]);
+                                                const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                                                if (input) {
+                                                    input.value = '';
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                            hidden={isLoading}
+                                        >
+                                            No Crear Productos Nuevos
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (previewStockData.length > 0) {
+                                                    handleCreateProductFromStock()
+                                                }
+                                                setStockUpload(false)
+                                            }}
+                                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                            disabled={!stockFile && !isLoading}
+                                            hidden={isLoading}
+                                        >
+                                            Crear Productos
+                                        </button>
+                                    </div>
+                                )}
                             </Dialog.Panel>
                         </div>
                     </div>
