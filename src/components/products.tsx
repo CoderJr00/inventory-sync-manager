@@ -184,7 +184,7 @@ export function ProductsView() {
     }
 
     const processStockFile = (file: File) => {
-        setIsLoading(true)
+        setIsLoadingStockP(true)
         const reader = new FileReader()
         reader.onload = async (e) => {
             try {
@@ -294,7 +294,7 @@ export function ProductsView() {
                     duration: 5000
                 });
             }
-            setIsLoading(false)
+            setIsLoadingStockP(false)
         }
         reader.readAsBinaryString(file)
     }
@@ -439,7 +439,7 @@ export function ProductsView() {
     };
 
     const handleCreateProductFromStock = async () => {
-        setIsLoadingStockP(true);
+        // setIsLoadingStockP(true);
         console.log('Intentando crear productos...');
         if (stockFile) {
             for (const product of previewStockData) {
@@ -463,7 +463,7 @@ export function ProductsView() {
                 duration: 3000
             });
         }
-        setIsLoadingStockP(false);
+        // setIsLoadingStockP(false);
     };
 
     // Modificar la función de filtrado para incluir cantidades personalizadas
@@ -858,7 +858,6 @@ export function ProductsView() {
                                                 type="file"
                                                 accept=".xlsx,.xls"
                                                 onChange={(e) => {
-                                                    setIsLoadingStockP(true)
                                                     const file = e.target.files?.[0];
                                                     if (file) {
                                                         processStockFile(file);
@@ -924,7 +923,7 @@ export function ProductsView() {
                                     </div>
                                 )}
                                 {isLoadingStockP && (
-                                    <div className="flex justify-center gap-1 mt-2">
+                                    <div className="flex justify-center gap-1 py-6">
                                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
                                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
@@ -957,7 +956,7 @@ export function ProductsView() {
                                         disabled={!stockFile && !isLoading}
                                         hidden={isLoading}
                                     >
-                                        Confirmar
+                                        Crear Productos
                                     </button>
                                 </div>
                             </Dialog.Panel>
