@@ -45,14 +45,14 @@ export async function POST(request: Request) {
     } catch (error) {
         // Log detallado del error
         console.error('Detailed error:', {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
+            // name: error.name,
+            // message: error.message,
+            // stack: error.stack,
         });
 
         return NextResponse.json({
             error: 'Error creating products',
-            details: error.message
+            // details: error.message
         }, {
             status: 500
         });
