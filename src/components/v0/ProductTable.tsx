@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, Search } from 'lucide-react'
 import ProductRow from './ProductRow'
 import AdvancedFilters from './AdvancedFilters'
@@ -32,19 +32,22 @@ export default function ProductTable({ products }: ProductTableProps) {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [visibleColumns, setVisibleColumns] = useState(columns.map(col => col.key))
 
-  const filteredProducts = products.filter(product =>
-    (product.odooCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.odooName.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (filters.manufacturable === '' || product.fabricable.toString() === filters.manufacturable) &&
-    (filters.hasInventory === '' || 
-     (filters.hasInventory === 'true' ? product.cantidadInventario > 0 : product.cantidadInventario === 0))
-  )
+  const filteredProducts = useMemo(() => {
+    return products.filter(product =>
+      ((product.odooCode?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+       (product.odooName?.toLowerCase() || '').includes(searchTerm.toLowerCase())) &&
+      (filters.manufacturable === '' || product.fabricable.toString() === filters.manufacturable) &&
+      (filters.hasInventory === '' || 
+       (filters.hasInventory === 'true' ? product.cantidadInventario > 0 : product.cantidadInventario === 0))
+    )
+  }, [products, searchTerm, filters]);
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
-  const currentProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  const currentProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProducts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm shadow-xl rounded-lg overflow-hidden border border-slate-700">

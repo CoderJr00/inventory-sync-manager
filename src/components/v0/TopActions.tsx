@@ -18,6 +18,7 @@ interface TopActionsProps {
   handleCopyBuyList: () => void;
   handleCopyProductionList: () => void;
   productsLength: number;
+  handleResetAllStock: () => void;
 }
 
 export default function TopActions({ 
@@ -26,7 +27,8 @@ export default function TopActions({
   handleDeleteAllProducts,
   handleCopyBuyList,
   handleCopyProductionList,
-  productsLength 
+  productsLength,
+  handleResetAllStock
 }: TopActionsProps) {
   return (
     <div className="flex justify-evenly space-x-2">
@@ -67,6 +69,14 @@ export default function TopActions({
       >
         <Trash2 className="h-5 w-5" />
         <span>Eliminar Todos</span>
+      </button>
+      <button
+        onClick={handleResetAllStock}
+        className="bg-orange-600/30 hover:bg-orange-600/40 text-orange-200 font-medium py-2 px-4 rounded flex items-center gap-2 transition-colors border border-orange-500/30"
+        hidden={productsLength === 0}
+      >
+        <RefreshCw className="h-5 w-5" />
+        <span>Reiniciar Stock</span>
       </button>
     </div>
   )

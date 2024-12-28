@@ -386,33 +386,52 @@ export function ProductsView() {
     };
 
     const handleCreateProduct = async () => {
-        setIsLoading(true);
+        console.log('Intentando crear productos...');
         if (file) {
-            const p: Product[] = [];
-            for (const product of previewData) {
-                const res = await createProduct(product);
-                if (res.ok) {
-                    p.push(product);
-                    // setProducts(prev => [...prev, product]);
+            setIsLoading(true);
+            try {
+                // Hacer una única llamada a la API con todos los productos
+                const response = await fetch('/api/products/create-many', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(previewData)
+                });
+
+                if (!response.ok) throw new Error('Error creating products');
+                
+                // Esperar la respuesta del servidor
+                const result = await response.json();
+                
+                // Solo actualizar el estado local si la creación fue exitosa
+                if (result.count > 0) {
+                // Actualizar el estado local
+                setProducts(prev => [...prev, ...previewData]);
+                setPreviewData([]);
+                setFile(null);
+
+                showNotification({
+                    type: 'success',
+                    title: 'Productos Creados',
+                        message: `Se han creado ${result.count} productos correctamente.`,
+                    duration: 3000
+                });
+                } else {
+                    throw new Error('No se crearon productos');
                 }
+            } catch (error) {
+                console.error('Error al crear productos:', error);
+                showNotification({
+                    type: 'error',
+                    title: 'Error',
+                    message: 'No se pudieron crear los productos.',
+                    duration: 3000
+                });
+            } finally {
+                setIsLoading(false);
             }
-            console.log(p);
-            setProducts(p);
-            showNotification({
-                type: 'success',
-                title: 'Productos Actualizados',
-                message: 'Los productos han sido actualizados en el sistema.',
-                duration: 3000
-            });
-        } else {
-            showNotification({
-                type: 'error',
-                title: 'Error',
-                message: 'No se pudo actualizar los productos del sistema.',
-                duration: 3000
-            });
         }
-        setIsLoading(false);
     };
 
     const handleCreateProductFromStock = async () => {
@@ -501,32 +520,34 @@ export function ProductsView() {
     };
 
     const handleDeleteAllProducts = async () => {
-        setIsLoading(true);
         try {
-            const response = await fetch('/api/products', {
+            setIsLoading(true);
+
+            const response = await fetch('/api/products/delete-all', {
                 method: 'DELETE',
             });
 
-            if (!response.ok) throw new Error('Error deleting products')
-            else {
-                setProducts([]);
-            }
+            if (!response.ok) throw new Error('Error deleting all products');
+
+            setProducts([]);
+
             showNotification({
                 type: 'success',
                 title: 'Productos eliminados',
-                message: 'Todos los productos han sido eliminados de la base de datos.',
-                duration: 3000,
+                message: 'Todos los productos han sido eliminados correctamente.',
+                duration: 3000
             });
         } catch (error) {
-            console.error('Error al eliminar productos:', error);
+            console.error('Error deleting products:', error);
             showNotification({
                 type: 'error',
                 title: 'Error',
                 message: 'No se pudieron eliminar los productos.',
-                duration: 3000,
+                duration: 3000
             });
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const handleCopyBuyList = () => {
@@ -591,6 +612,44 @@ export function ProductsView() {
         }
     };
 
+    const handleResetAllStock = async () => {
+        try {
+            setIsLoading(true);
+
+            // Hacer una única llamada a la API
+            const response = await fetch('/api/products/reset-stock', {
+                method: 'POST',
+            });
+
+            if (!response.ok) throw new Error('Error resetting products stock');
+
+            // Actualizar el estado local
+            setProducts(prevProducts =>
+                prevProducts.map(product => ({
+                    ...product,
+                    cantidadInventario: 0
+                }))
+            );
+
+            showNotification({
+                type: 'success',
+                title: 'Stock reiniciado',
+                message: `Se ha reiniciado el stock de todos los productos a 0.`,
+                duration: 3000
+            });
+        } catch (error) {
+            console.error('Error resetting stock:', error);
+            showNotification({
+                type: 'error',
+                title: 'Error',
+                message: 'No se pudo reiniciar el stock de los productos.',
+                duration: 3000
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="flex-1 space-y-4 md:pt-5 md:px-10">
             {isLoading && <LoadingOverlay />}
@@ -623,15 +682,16 @@ export function ProductsView() {
 
             <div className="border border-slate-700 bg-slate-800/50 backdrop-blur-sm shadow-xl rounded-lg p-6">
                 <div className="flex flex-col gap-4">
-                    <TopActions 
+                    <TopActions
                         setShowUpload={setShowUpload}
                         setStockUpload={setStockUpload}
                         handleDeleteAllProducts={handleDeleteAllProducts}
                         handleCopyBuyList={handleCopyBuyList}
                         handleCopyProductionList={handleCopyProductionList}
                         productsLength={products.length}
+                        handleResetAllStock={handleResetAllStock}
                     />
-                    <ProductTable products={products}/>
+                    <ProductTable products={products} />
                 </div>
             </div>
 
