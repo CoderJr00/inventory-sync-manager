@@ -184,7 +184,7 @@ export function ProductsView() {
 
     const processStockFile = (file: File) => {
         const reader = new FileReader()
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = e.target?.result
                 const workbook = XLSX.read(data, { type: "binary" })
@@ -246,7 +246,7 @@ export function ProductsView() {
 
                 // Actualizar productos existentes
                 if (updatedProducts.length > 0) {
-                    updatedProducts.forEach(async (product) => {
+                    await Promise.all(updatedProducts.map(async (product) => {
                         try {
                             const response = await fetch(`/api/products?id=${product.id}`, {
                                 method: 'PUT',
@@ -259,14 +259,16 @@ export function ProductsView() {
                             if (!response.ok) throw new Error('Error updating product');
 
                             // Actualizar el estado local
-                            setProducts(prevProducts =>
-                                prevProducts.map(p =>
-                                    p.odooCode === product.odooCode ? product : p
-                                )
-                            );
+                            return product; // Retornar el producto actualizado
                         } catch (error) {
                             console.error('Error updating product:', error);
                         }
+                    })).then(updatedProducts => {
+                        setProducts(prevProducts =>
+                            prevProducts.map(p =>
+                                updatedProducts.find(up => up?.odooCode === p.odooCode) || p
+                            )
+                        );
                     });
                 }
 
