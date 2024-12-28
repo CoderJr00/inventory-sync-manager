@@ -36,6 +36,7 @@ export function ProductsView() {
     const [isUpdatingAmount, setIsUpdatingAmount] = useState<string | null>(null);
     const [customAmounts, setCustomAmounts] = useState<Record<string, number>>({});
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingStockP, setIsLoadingStockP] = useState(false);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -438,7 +439,7 @@ export function ProductsView() {
     };
 
     const handleCreateProductFromStock = async () => {
-        setIsLoading(true);
+        setIsLoadingStockP(true);
         console.log('Intentando crear productos...');
         if (stockFile) {
             for (const product of previewStockData) {
@@ -462,7 +463,7 @@ export function ProductsView() {
                 duration: 3000
             });
         }
-        setIsLoading(false);
+        setIsLoadingStockP(false);
     };
 
     // Modificar la función de filtrado para incluir cantidades personalizadas
@@ -850,76 +851,83 @@ export function ProductsView() {
                                     Cargar Excel con Stock de Inventario de Odoo
                                 </Dialog.Title>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-2 bg-slate-700 p-2 rounded">
-                                        <input
-                                            type="file"
-                                            accept=".xlsx,.xls"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    processStockFile(file);
-                                                    setStockFile(file);
-                                                }
-                                            }}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                        />
-                                        {stockFile && (
-                                            <>
-                                                <button
-                                                    onClick={() => {
-                                                        setStockFile(null);
-                                                        setPreviewStockData([]);
-                                                        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                                                        if (input) {
-                                                            input.value = '';
-                                                        }
-                                                    }}
-                                                    className="p-1 bg-red-500 rounded-full hover:bg-red-600"
-                                                >
-                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </>
+                                {!isLoadingStockP && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 bg-slate-700 p-2 rounded">
+                                            <input
+                                                type="file"
+                                                accept=".xlsx,.xls"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        processStockFile(file);
+                                                        setStockFile(file);
+                                                    }
+                                                }}
+                                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                            />
+                                            {stockFile && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            setStockFile(null);
+                                                            setPreviewStockData([]);
+                                                            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                                                            if (input) {
+                                                                input.value = '';
+                                                            }
+                                                        }}
+                                                        className="p-1 bg-red-500 rounded-full hover:bg-red-600"
+                                                    >
+                                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {previewStockData.length > 0 && (
+                                            <button
+                                                onClick={() => setShowStockPreview(!showStockPreview)}
+                                                className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-2"
+                                            >
+                                                {showStockPreview ? '▼ Ocultar' : '▶ Mostrar'} productos nuevos
+                                            </button>
+                                        )}
+
+                                        {showStockPreview && previewStockData.length > 0 && (
+                                            <div className="mt-4 overflow-x-auto">
+                                                <table className="w-full text-sm text-left text-gray-300">
+                                                    <thead className="text-xs uppercase bg-gray-700">
+                                                        <tr>
+                                                            <th className="px-6 py-3">Código</th>
+                                                            <th className="px-6 py-3">Nombre</th>
+                                                            <th className="px-6 py-3">Cantidad</th>
+                                                            <th className="px-6 py-3">U/M</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {previewStockData.map((item, index) => (
+                                                            <tr key={index} className="border-b border-gray-700 text-center">
+                                                                <td className="px-2 py-4">{item.odooCode}</td>
+                                                                <td className="px-10 py-4 text-left font-semibold">{item.odooName}</td>
+                                                                <td className="px-1 py-4">{item.cantidadInventario}</td>
+                                                                <td className="px-2 py-4">{item.unidadMedida}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         )}
                                     </div>
-
-                                    {previewStockData.length > 0 && (
-                                        <button
-                                            onClick={() => setShowStockPreview(!showStockPreview)}
-                                            className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-2"
-                                        >
-                                            {showStockPreview ? '▼ Ocultar' : '▶ Mostrar'} vista previa
-                                        </button>
-                                    )}
-
-                                    {showStockPreview && previewStockData.length > 0 && (
-                                        <div className="mt-4 overflow-x-auto">
-                                            <table className="w-full text-sm text-left text-gray-300">
-                                                <thead className="text-xs uppercase bg-gray-700">
-                                                    <tr>
-                                                        <th className="px-6 py-3">Código</th>
-                                                        <th className="px-6 py-3">Nombre</th>
-                                                        <th className="px-6 py-3">Cantidad</th>
-                                                        <th className="px-6 py-3">U/M</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {previewStockData.map((item, index) => (
-                                                        <tr key={index} className="border-b border-gray-700 text-center">
-                                                            <td className="px-2 py-4">{item.odooCode}</td>
-                                                            <td className="px-10 py-4 text-left font-semibold">{item.odooName}</td>
-                                                            <td className="px-1 py-4">{item.cantidadInventario}</td>
-                                                            <td className="px-2 py-4">{item.unidadMedida}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
+                                )} : (
+                                <div className="flex justify-center gap-1 mt-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                 </div>
-
+                                )
                                 <div className="mt-4 flex justify-end gap-2">
                                     <button
                                         onClick={() => {
@@ -932,6 +940,7 @@ export function ProductsView() {
                                             }
                                         }}
                                         className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                        hidden={isLoading}
                                     >
                                         Cancelar
                                     </button>
@@ -944,6 +953,7 @@ export function ProductsView() {
                                         }}
                                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                                         disabled={!stockFile && !isLoading}
+                                        hidden={isLoading}
                                     >
                                         Confirmar
                                     </button>
