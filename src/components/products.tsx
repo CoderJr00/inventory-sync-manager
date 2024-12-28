@@ -921,13 +921,14 @@ export function ProductsView() {
                                             </div>
                                         )}
                                     </div>
-                                )} : (
-                                <div className="flex justify-center gap-1 mt-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                                </div>
-                                )
+                                )}
+                                {isLoadingStockP && (
+                                    <div className="flex justify-center gap-1 mt-2">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                    </div>
+                                )}
                                 <div className="mt-4 flex justify-end gap-2">
                                     <button
                                         onClick={() => {
