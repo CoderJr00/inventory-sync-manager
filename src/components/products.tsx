@@ -207,7 +207,7 @@ export function ProductsView() {
                     return
                 }
 
-                handleResetAllStock()
+                await handleResetAllStock();
 
                 // Crear un array para productos nuevos y otro para actualizaciones
                 const updatedProducts: Product[] = [];
@@ -279,7 +279,7 @@ export function ProductsView() {
                 // Crear nuevos productos
                 if (newProducts.length > 0) {
                     setPreviewStockData(newProducts);
-                }
+                } else setShowStockPreview(false)
                 showNotification({
                     type: 'success',
                     title: 'Archivo procesado',
