@@ -277,7 +277,6 @@ export function ProductsView() {
                 if (newProducts.length > 0) {
                     setPreviewStockData(newProducts);
                 }
-                setIsLoading(false)
                 showNotification({
                     type: 'success',
                     title: 'Archivo procesado',
@@ -294,6 +293,7 @@ export function ProductsView() {
                     duration: 5000
                 });
             }
+            setIsLoading(false)
         }
         reader.readAsBinaryString(file)
     }
