@@ -37,6 +37,7 @@ export function ProductsView() {
     const [customAmounts, setCustomAmounts] = useState<Record<string, number>>({});
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingStockP, setIsLoadingStockP] = useState(false);
+    const [stockLoaded, setStockLoaded] = useState(false)
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -47,6 +48,11 @@ export function ProductsView() {
                 const prods = await response.json();
                 setProducts(prods);
                 console.log('Productos en la base de datos:', prods);
+
+                // Comprobar si hay stock cargado
+                const hasStock = prods.some((product: { cantidadInventario: number }) => product.cantidadInventario > 0);
+                setStockLoaded(hasStock); // Actualizar el estado de stockLoaded
+
             } catch (error) {
                 console.error('Error al cargar productos:', error);
             } finally {
@@ -296,6 +302,7 @@ export function ProductsView() {
                     duration: 5000
                 });
             }
+            setStockLoaded(true);
             setIsLoadingStockP(false)
         }
         reader.readAsBinaryString(file)
@@ -652,6 +659,7 @@ export function ProductsView() {
                 duration: 3000
             });
         } finally {
+            setStockLoaded(false)
             setIsLoading(false);
         }
     };
@@ -696,6 +704,7 @@ export function ProductsView() {
                         handleCopyProductionList={handleCopyProductionList}
                         productsLength={products.length}
                         handleResetAllStock={handleResetAllStock}
+                        stockLoaded={stockLoaded}
                     />
                     <ProductTable products={products} />
                 </div>

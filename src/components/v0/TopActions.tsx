@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { showNotification } from '../Notification'
-import { 
-  Upload, 
-  RefreshCw, 
-  ShoppingCart, 
+import {
+  Upload,
+  RefreshCw,
+  ShoppingCart,
   Factory,
   Trash2
 } from 'lucide-react'
@@ -19,16 +19,18 @@ interface TopActionsProps {
   handleCopyProductionList: () => void;
   productsLength: number;
   handleResetAllStock: () => void;
+  stockLoaded: boolean;
 }
 
-export default function TopActions({ 
-  setShowUpload, 
+export default function TopActions({
+  setShowUpload,
   setStockUpload,
   handleDeleteAllProducts,
   handleCopyBuyList,
   handleCopyProductionList,
   productsLength,
-  handleResetAllStock
+  handleResetAllStock,
+  stockLoaded
 }: TopActionsProps) {
   return (
     <div className="flex justify-evenly space-x-2">
@@ -72,8 +74,10 @@ export default function TopActions({
       </button>
       <button
         onClick={handleResetAllStock}
-        className="bg-orange-600/30 hover:bg-orange-600/40 text-orange-200 font-medium py-2 px-4 rounded flex items-center gap-2 transition-colors border border-orange-500/30"
+        className={`bg-orange-600/30 text-orange-200 font-medium py-2 px-4 rounded flex items-center gap-2 transition-colors border border-orange-500/30 ${!stockLoaded ? 'cursor-not-allowed opacity-50' : 'hover:bg-orange-600/40'}`}
         hidden={productsLength === 0}
+        disabled={!stockLoaded}
+        title={!stockLoaded ? 'No hay stock Cargado para reiniciar' : ''}
       >
         <RefreshCw className="h-5 w-5" />
         <span>Reiniciar Stock</span>
